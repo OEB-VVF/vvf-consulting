@@ -2,7 +2,7 @@
 
 ## Overview
 
-`vvf_project_management` is a reusable Odoo 19 module that implements VVF Consulting's agile project methodology. It structures ERP implementation projects around MVPs, with a clear pipeline from requirement capture through production deployment.
+`vvf_project_management` is a reusable Odoo 19 module that implements VVF Consulting's agile project methodology. It structures ERP implementation projects around **Sprints** (development cycles), with a clear pipeline from requirement capture through production deployment.
 
 **Location:** `addons/vvf_project_management/`
 **Dependencies:** `project`, `knowledge` (Odoo Enterprise)
@@ -29,12 +29,14 @@ Each Odoo company represents a distinct customer engagement. This provides natur
 - Project configuration
 - Reporting
 
-### Agile / MVP-Driven Delivery
+### Agile / Sprint-Driven Delivery
 
-Projects are structured in **MVPs** (milestones). Each MVP represents a deliverable increment. Requirements are triaged into MVPs based on criticality:
-- **MVP-mandatory** — cannot operate without it
+Projects are structured in **Sprints** (development cycles). Each Sprint represents a deliverable increment. Requirements are triaged into Sprints based on criticality:
+- **Sprint-mandatory** — cannot operate without it
 - **Current practice** — reflects existing system behaviour (must be carried over)
-- **Post-MVP** — nice-to-have, deferred
+- **Post-Sprint** — nice-to-have, deferred
+
+> **Note:** The technical model name is `vvf.project.mvp` (kept for database compatibility). All user-facing labels say "Sprint".
 
 ### Subject as Task Attribute
 
@@ -42,7 +44,7 @@ A **Subject** is a classification attribute on tasks — not a separate hierarch
 
 **Design principle:** A subject must be independent in meaning and intent. If a requirement seems to span multiple subjects, the subjects are not well defined and should be restructured.
 
-This allows full slice-and-dice: group by subject, by MVP, by responsible party, by stage — in any combination using standard Odoo views.
+This allows full slice-and-dice: group by subject, by Sprint, by responsible party, by stage — in any combination using standard Odoo views.
 
 ---
 
@@ -70,25 +72,25 @@ Each task (requirement) flows through the following stages:
 
 | # | Question | If YES |
 |---|----------|--------|
-| 1 | Is this mandatory for the MVP? (Cannot operate without it) | → **MVP scope** |
-| 2 | Does it reflect current practice from the existing system? | → **MVP scope** (carry-over) |
-| 3 | Neither of the above | → **Post-MVP** (deferred) |
+| 1 | Is this mandatory for the Sprint? (Cannot operate without it) | → **Sprint scope** |
+| 2 | Does it reflect current practice from the existing system? | → **Sprint scope** (carry-over) |
+| 3 | Neither of the above | → **Post-Sprint** (deferred) |
 
 **The triage decision and reasoning MUST be recorded** on the task for transparency — this is surfaced in steer-co reporting so the customer sees why decisions were made.
 
-**Resource allocation (for MVP-scoped items):**
+**Resource allocation (for Sprint-scoped items):**
 
 | Assignment | Criteria |
 |---|---|
-| **VVF resource** | Industry-specific, functional design, custom development |
-| **Externalised (to Odoo)** | Generic issue not industry-specific (e.g., approval workflow) OR technical (e.g., API integration with MES) |
+| **VVF Responsible** | Industry-specific, functional design, custom development |
+| **Developer (Odoo)** | Generic issue not industry-specific (e.g., approval workflow) OR technical (e.g., API integration with MES) |
 | **Customer resource** | Customer-side configuration, data preparation, UAT ownership |
 
 **Fields at this stage:**
-- MVP assignment
+- Sprint assignment
 - Triage result (mandatory / current practice / deferred)
 - Triage justification (text — why this decision was made)
-- Responsible party (VVF / Externalised / Customer)
+- VVF Responsible + Developer
 - Deadline
 
 ### 4. Blueprint
@@ -146,7 +148,7 @@ Risks are tracked directly on tasks using a lightweight model:
 | **None** | No identified risk (default) |
 | **Low** | Minor concern, mitigable within current plan |
 | **Medium** | Could impact deadline or scope if not addressed |
-| **High** | Blocks progress or threatens MVP delivery |
+| **High** | Blocks progress or threatens Sprint delivery |
 
 ### Risk Fields
 
@@ -167,46 +169,46 @@ Risks are tracked directly on tasks using a lightweight model:
 
 ## Steer-co Reporting
 
-The steer-co report is the primary customer-facing deliverable. It should be a **one-page PDF per MVP** (or a consolidated view across MVPs).
+The steer-co report is the primary customer-facing deliverable. It should be a **one-page PDF per Sprint** (or a consolidated view across Sprints).
 
-### KPIs per MVP
+### KPIs per Sprint
 
 | KPI | Description |
 |---|---|
 | **Subject list with sorting status** | Which subjects are sorted / not sorted, with the triage justification visible |
 | **% completion** | Tasks completed vs. total (by count, optionally weighted) |
-| **Deadline tracking** | MVP target date vs. current projection |
+| **Deadline tracking** | Sprint target date vs. current projection |
 | **Blocked items** | Tasks flagged as blocked, with reason |
 | **Risk summary** | High/Medium risks with description, mitigation, and owner |
 
 ### Report Structure (Draft)
 
 ```
-┌─────────────────────────────────────────────────┐
-│  VVF Steer-co Report — [Project] — [MVP Name]  │
-│  Date: [date]          Deadline: [target_date]  │
-├─────────────────────────────────────────────────┤
-│  OVERALL PROGRESS          ████████░░  78%      │
-├─────────────────────────────────────────────────┤
-│  SUBJECTS                                       │
-│  ✓ Sales Order Flow        — 5/5 done           │
-│  ◐ Inventory Management    — 3/7 done           │
-│  ○ Manufacturing           — 0/4 (not started)  │
-│  ⊘ Reporting               — deferred (Post-MVP)│
-├─────────────────────────────────────────────────┤
-│  RISKS                                          │
-│  🔴 MES API specs not received — Owner: Customer│
-│     Mitigation: Escalate in next workshop       │
-│  🟡 Inventory valuation gap — Owner: VVF        │
-│     Mitigation: Blueprint in review             │
-├─────────────────────────────────────────────────┤
-│  BLOCKED                                        │
-│  • Task X — waiting on data from customer       │
-├─────────────────────────────────────────────────┤
-│  DECISIONS LOG (this period)                    │
-│  • Subject "Reporting" deferred to MVP2:        │
-│    Reason: not mandatory, no current practice   │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  VVF Steer-co Report — [Project] — [Sprint Name]   │
+│  Date: [date]          Deadline: [target_date]      │
+├─────────────────────────────────────────────────────┤
+│  OVERALL PROGRESS          ████████░░  78%          │
+├─────────────────────────────────────────────────────┤
+│  SUBJECTS                                           │
+│  ✓ Sales Order Flow        — 5/5 done               │
+│  ◐ Inventory Management    — 3/7 done               │
+│  ○ Manufacturing           — 0/4 (not started)      │
+│  ⊘ Reporting               — deferred (Post-Sprint) │
+├─────────────────────────────────────────────────────┤
+│  RISKS                                              │
+│  🔴 MES API specs not received — Owner: Customer    │
+│     Mitigation: Escalate in next workshop           │
+│  🟡 Inventory valuation gap — Owner: VVF            │
+│     Mitigation: Blueprint in review                 │
+├─────────────────────────────────────────────────────┤
+│  BLOCKED                                            │
+│  • Task X — waiting on data from customer           │
+├─────────────────────────────────────────────────────┤
+│  DECISIONS LOG (this period)                        │
+│  • Subject "Reporting" deferred to Sprint 2:        │
+│    Reason: not mandatory, no current practice       │
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -327,12 +329,12 @@ sync_targets:
 
 ### V1: Lightweight — No Direct Planning Integration
 
-For the MVP of this module, we do NOT integrate with the Odoo Planning module. Resource allocation is handled via the `responsible_party` field (VVF / Externalised / Customer) and optional assignee on tasks.
+For V1 of this module, we do NOT integrate with the Odoo Planning module. Resource allocation is handled via the `vvf_consultant_id` and `vvf_developer_id` fields and optional assignee on tasks.
 
-### Future (V2): Planning Views per MVP
+### Future (V2): Planning Views per Sprint
 
 If reporting needs grow:
-- Resource allocation view showing VVF consultant load per MVP
+- Resource allocation view showing VVF consultant load per Sprint
 - Timeline view of tasks per subject
 - Capacity planning across multiple engagements
 
@@ -363,10 +365,11 @@ Extends the standard Odoo task with VVF methodology fields:
 | Field | Type | Description |
 |---|---|---|
 | `subject_id` | Many2one → `vvf.project.subject` | Subject classification |
-| `mvp_id` | Many2one → `vvf.project.mvp` | MVP assignment |
+| `mvp_id` | Many2one → `vvf.project.mvp` | Sprint assignment (technical name kept as mvp) |
 | `triage_result` | Selection | `mandatory` / `current_practice` / `deferred` |
 | `triage_justification` | Text | Why this triage decision was made (shown in steer-co) |
-| `responsible_party` | Selection | `vvf` / `externalised` / `customer` |
+| `consultant_id` | Many2one → `vvf.project.consultant` | VVF Responsible |
+| `developer_id` | Many2one → `vvf.project.developer` | Developer |
 | `blueprint_article_id` | Many2one → `knowledge.article` | Link to blueprint in Knowledge Base |
 | `blueprint_complete` | Boolean | Computed: can this move to Blueprint stage? |
 | `risk_level` | Selection | `none` / `low` / `medium` / `high` |
@@ -374,17 +377,19 @@ Extends the standard Odoo task with VVF methodology fields:
 | `risk_mitigation` | Text | Mitigation plan |
 | `risk_owner` | Many2one → `res.users` | Risk mitigation owner |
 
-### MVP (`vvf.project.mvp`)
+### Sprint (`vvf.project.mvp`)
+
+> Technical model name kept as `vvf.project.mvp` to avoid database migration. All UI labels say "Sprint".
 
 | Field | Type | Description |
 |---|---|---|
-| `name` | Char | MVP name (e.g., "MVP 1 - Go Live") |
+| `name` | Char | Sprint name (e.g., "Sprint 1 - US Go Live") |
 | `project_id` | Many2one → `project.project` | Parent project |
 | `company_id` | Many2one → `res.company` | Company |
-| `sequence` | Integer | MVP order |
+| `sequence` | Integer | Sprint order |
 | `target_date` | Date | Target delivery date |
-| `description` | Html | MVP scope description |
-| `task_ids` | One2many → `project.task` | Tasks in this MVP |
+| `description` | Html | Sprint scope description |
+| `task_ids` | One2many → `project.task` | Tasks in this Sprint |
 | `task_count` | Integer | Computed: total tasks |
 | `task_done_count` | Integer | Computed: tasks in Production stage |
 | `progress` | Float | Computed: % completion |
@@ -399,26 +404,27 @@ Extends the standard Odoo task with VVF methodology fields:
 | D2 | One subject per task — no multi-subject | If it spans subjects, the subjects are poorly defined |
 | D3 | Triage justification is mandatory and shown in steer-co | Transparency: customer sees why decisions were made |
 | D4 | Risk tracked on tasks, not separate register | Lightweight; risks surface in steer-co automatically |
-| D5 | No Planning module integration in V1 | Keep it light; `responsible_party` + assignee is enough |
+| D5 | No Planning module integration in V1 | Keep it light; consultant/developer fields + assignee is enough |
 | D6 | Git-backed Obsidian is source of truth; sync to Knowledge Base in V2 | Dev loop drives architecture; multi-target sync supports different customers |
-| D7 | Externalised task sync with Odoo support — V2 | Not needed for MVP |
+| D7 | Externalised task sync with Odoo support — V2 | Not needed for Sprint 1 |
+| D8 | MVP renamed to Sprint (UI only, technical name kept) | Sprint = development cycle; MVP goals described in Sprint description |
 
 ---
 
 ## Scope Summary
 
-### V1 (MVP of the module)
+### V1 (Module foundation)
 
 - [x] Stage pipeline (8 stages)
 - [x] Subject model + task attribute
-- [x] MVP model + task assignment
+- [x] Sprint model + task assignment
 - [x] Triage fields with justification
-- [x] Resource allocation (selection field)
+- [x] Resource allocation (VVF Responsible + Developer)
 - [x] Risk fields on tasks
 - [x] Blueprint gate (completeness check)
 - [x] Knowledge Base article link
 - [x] Steer-co QWeb PDF report
-- [x] Group-by views (subject, MVP, stage, responsible party)
+- [x] Group-by views (subject, Sprint, stage, responsible party)
 
 ### V2 (Future)
 
@@ -432,8 +438,8 @@ Extends the standard Odoo task with VVF methodology fields:
 
 ## Next Steps
 
-1. ~~Validate specification~~ → In progress
+1. ~~Validate specification~~ → Done
 2. Define blueprint article template (Knowledge Base)
-3. Scaffold the module
-4. Implement stage pipeline and data model
-5. Build steer-co QWeb report
+3. ~~Scaffold the module~~ → Done
+4. ~~Implement stage pipeline and data model~~ → Done
+5. ~~Build steer-co QWeb report~~ → Done
